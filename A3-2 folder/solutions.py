@@ -41,7 +41,10 @@ def normalize(self):
     {}
     """
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    total = sum(self.values())
+    if total != 0:
+        for key in self:
+            self[key] /= total
 
 def sample(self):
     """
@@ -65,15 +68,33 @@ def sample(self):
     0.0
     """
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    total_sum = sum(self.values())
+    r = random.random() * total_sum
+    cumulative = 0
+    for key, value in self.items():
+        cumulative += value
+        if cumulative > r:
+            return key
 
+from util import manhattanDistance
 
 def getObservationProb(self, noisyDistance, pacmanPosition, ghostPosition, jailPosition):
     """
     Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
     """
-    "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    if ghostPosition == jailPosition:
+        # If the ghost is in jail, the sensor returns None with probability 1
+        return 1 if noisyDistance is None else 0
+
+    # If the sensor reading is None but the ghost is not in jail, return 0
+    if noisyDistance is None:
+        return 0
+
+    # Calculate the true Manhattan distance between Pacman and the ghost
+    trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
+
+    # Use the given function to calculate P(noisyDistance | trueDistance)
+    return busters.getObservationProbability(noisyDistance, trueDistance)
 
 
 
@@ -93,7 +114,16 @@ def observeUpdate(self, observation, gameState):
     position is known.
     """
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    pacmanPosition = gameState.getPacmanPosition()
+    jailPosition = self.getJailPosition()
+
+    # Update the belief for each position based on the new observation
+    for position in self.allPositions:
+        prior = self.beliefs[position]
+        likelihood = self.getObservationProb(observation, pacmanPosition, position, jailPosition)
+        self.beliefs[position] = prior * likelihood
+
+    # Normalize the beliefs
     self.beliefs.normalize()
 
 

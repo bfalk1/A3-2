@@ -13,6 +13,7 @@
 
 '''Implement the methods from the classes in inference.py here'''
 
+
 import util
 from util import raiseNotDefined
 import random
@@ -114,16 +115,19 @@ def observeUpdate(self, observation, gameState):
     position is known.
     """
     "*** YOUR CODE HERE ***"
-    pacmanPosition = gameState.getPacmanPosition()
-    jailPosition = self.getJailPosition()
+    pac_pos = gameState.getPacmanPosition()
+    jail_pos = self.getJailPosition()
 
-    # Update the belief for each position based on the new observation
-    for position in self.allPositions:
-        prior = self.beliefs[position]
-        likelihood = self.getObservationProb(observation, pacmanPosition, position, jailPosition)
-        self.beliefs[position] = prior * likelihood
+    # If observation is None, ghost is in jail
+    if observation is None:
+        # Set belief to 1 for jail position
+        self.beliefs = util.Counter({jail_pos: 1.0})
+    else:
+        for ghost_pos in self.allPositions:
+            observation_prob = self.getObservationProb(observation, pac_pos,
+                                                      ghost_pos, jail_pos)
+            self.beliefs[ghost_pos] *= observation_prob
 
-    # Normalize the beliefs
     self.beliefs.normalize()
 
 
@@ -137,4 +141,20 @@ def elapseTime(self, gameState):
     current position is known.
     """
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    newBeliefs = util.Counter() 
+
+    # Iterate through each possible old position of the ghost
+    for oldPos in self.allPositions:
+
+        # Calculate the distribution of possible new positions for the ghost based on its previous position
+        newPosDist = self.getPositionDistribution(gameState, oldPos)
+
+        # Update beliefs for each new position based on the probability of the ghost moving to that position
+        for newPos, prob in newPosDist.items():
+            newBeliefs[newPos] += self.beliefs[oldPos] * prob
+
+    # Normalize the updated beliefs to ensure they sum up to one
+    newBeliefs.normalize()
+
+    # Update the agent's belief distribution with the new updated beliefs
+    self.beliefs = newBeliefs

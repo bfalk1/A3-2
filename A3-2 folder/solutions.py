@@ -84,17 +84,17 @@ def getObservationProb(self, noisyDistance, pacmanPosition, ghostPosition, jailP
     Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
     """
     if ghostPosition == jailPosition:
-        # If the ghost is in jail, the sensor returns None with probability 1
+       
         return 1 if noisyDistance is None else 0
 
-    # If the sensor reading is None but the ghost is not in jail, return 0
+   
     if noisyDistance is None:
         return 0
 
-    # Calculate the true Manhattan distance between Pacman and the ghost
+   
     trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
 
-    # Use the given function to calculate P(noisyDistance | trueDistance)
+    
     return busters.getObservationProbability(noisyDistance, trueDistance)
 
 
@@ -118,9 +118,9 @@ def observeUpdate(self, observation, gameState):
     pac_pos = gameState.getPacmanPosition()
     jail_pos = self.getJailPosition()
 
-    # If observation is None, ghost is in jail
+   
     if observation is None:
-        # Set belief to 1 for jail position
+        
         self.beliefs = util.Counter({jail_pos: 1.0})
     else:
         for ghost_pos in self.allPositions:
@@ -141,20 +141,22 @@ def elapseTime(self, gameState):
     current position is known.
     """
     "*** YOUR CODE HERE ***"
-    newBeliefs = util.Counter() 
+  
+    updated_beliefs = util.Counter() 
 
-    # Iterate through each possible old position of the ghost
-    for oldPos in self.allPositions:
+   
+    for old_pos in self.allPositions:
 
-        # Calculate the distribution of possible new positions for the ghost based on its previous position
-        newPosDist = self.getPositionDistribution(gameState, oldPos)
+       
+        new_pos_distribution = self.getPositionDistribution(gameState, old_pos)
 
-        # Update beliefs for each new position based on the probability of the ghost moving to that position
-        for newPos, prob in newPosDist.items():
-            newBeliefs[newPos] += self.beliefs[oldPos] * prob
+       
+        for new_pos, prob in new_pos_distribution.items():
+            updated_beliefs[new_pos] += self.beliefs[old_pos] * prob
 
-    # Normalize the updated beliefs to ensure they sum up to one
-    newBeliefs.normalize()
+   
+    updated_beliefs.normalize()
 
-    # Update the agent's belief distribution with the new updated beliefs
-    self.beliefs = newBeliefs
+   
+    self.beliefs = updated_beliefs
+

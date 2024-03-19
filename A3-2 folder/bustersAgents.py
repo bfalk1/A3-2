@@ -138,38 +138,25 @@ class GreedyBustersAgent(BustersAgent):
         not yet been captured, then chooses an action that brings
         Pacman closest to the closest ghost (according to mazeDistance!).
         """
-        pacmanPosition = gameState.getPacmanPosition()
-        legal = [a for a in gameState.getLegalPacmanActions()]
-        livingGhosts = gameState.getLivingGhosts()
-        livingGhostPositionDistributions = [beliefs for i, beliefs in enumerate(self.ghostBeliefs) if livingGhosts[i+1]]
+        pacmanPosition = gameState.getPacmanPosition() #Get initial position
+        legalMoves = [a for a in gameState.getLegalPacmanActions()] #Get all legal moves
+        livingGhosts = gameState.getLivingGhosts() #Get all ghosts
+        Ghostdistribution = [beliefs for i, beliefs in enumerate(self.ghostBeliefs) if livingGhosts[i+1]]
+        ghostPositions = [beliefs.argMax() for beliefs in Ghostdistribution] #Get probability of ghost potision
 
-        # Find the most probable position for each ghost.
-        ghostPositions = [beliefs.argMax() for beliefs in livingGhostPositionDistributions]
-
-        # Find the nearest ghost.
-        nearestGhostDistance = float("inf")
-        nearestGhostPos = None
-        # Iterate through ghost positions to find the nearest ghost
+        closestGhost = float("inf") #Init dummy var
+        ghostPosition = None
         for pos in ghostPositions:
-            distance = self.distancer.getDistance(pacmanPosition, pos)
-            # Update nearest ghost position if the distance is shorter
-            if distance < nearestGhostDistance:
-                nearestGhostDistance = distance
-                nearestGhostPos = pos
-
-        # Choose the action that minimizes the distance to the nearest ghost.
+            distanceToPac = self.distancer.getDistance(pacmanPosition, pos) #Get distances to pac
+            if distanceToPac < closestGhost:
+                closestGhost = distanceToPac
+                ghostPosition = pos #Get nearest ghost
         bestAction = None
-        shortestDistance = float("inf")
-        # Iterate through possible actions to find the best action
-        for action in legal:
-            # Get the position after taking the current action
+        shortestDistance = float("inf") #Dummy var
+        for action in legalMoves: #Iterate through all legal moves
             nextPos = Actions.getSuccessor(pacmanPosition, action)
-            # Calculate distance to the nearest ghost from the successor position
-            distance = self.distancer.getDistance(nextPos, nearestGhostPos)
-            # Update best action if the distance is shorter
-            if distance < shortestDistance:
+            distToGhost = self.distancer.getDistance(nextPos, ghostPosition) #Get distance between potential move and the ghost
+            if distToGhost < shortestDistance:
                 bestAction = action
-                shortestDistance = distance
-
-        # Return the best action
+                shortestDistance = distToGhost #Update dummy var
         return bestAction

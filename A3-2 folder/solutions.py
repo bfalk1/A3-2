@@ -41,11 +41,10 @@ def normalize(self):
     >>> empty
     {}
     """
-    "*** YOUR CODE HERE ***"
-    total = sum(self.values())
-    if total != 0:
+    totalKeyValue = sum(self.values()) #Create sum
+    if totalKeyValue != 0: #Check if normalization is needed
         for key in self:
-            self[key] /= total
+            self[key] /= totalKeyValue #normalize
 
 def sample(self):
     """
@@ -68,13 +67,12 @@ def sample(self):
     >>> round(samples.count('d') * 1.0/N, 1)
     0.0
     """
-    "*** YOUR CODE HERE ***"
-    total_sum = sum(self.values())
-    r = random.random() * total_sum
-    cumulative = 0
+    total_sum = sum(self.values()) #Get sum
+    randomVal = random.random() * total_sum #Create random value
+    cumulativeSum = 0
     for key, value in self.items():
-        cumulative += value
-        if cumulative > r:
+        cumulativeSum += value #Increment by random value to 
+        if cumulativeSum > randomVal: #Sum is greater than random val => return corresponding key 
             return key
 
 from util import manhattanDistance
@@ -84,15 +82,17 @@ def getObservationProb(self, noisyDistance, pacmanPosition, ghostPosition, jailP
     Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
     """
     if ghostPosition == jailPosition:
-       
+       #If the ghost pos is the same as the jail pos it is either one or the ghost is 
+        #not observed 
         return 1 if noisyDistance is None else 0
 
    
     if noisyDistance is None:
+        #ghost is not observed so return zero
         return 0
 
    
-    trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
+    trueDistance = manhattanDistance(pacmanPosition, ghostPosition) #Calculate the mahanttan distance
 
     
     return busters.getObservationProbability(noisyDistance, trueDistance)
@@ -114,15 +114,14 @@ def observeUpdate(self, observation, gameState):
     current position. However, this is not a problem, as Pacman's current
     position is known.
     """
-    "*** YOUR CODE HERE ***"
-    pac_pos = gameState.getPacmanPosition()
-    jail_pos = self.getJailPosition()
+    pac_pos = gameState.getPacmanPosition() #Get pac position
+    jail_pos = self.getJailPosition() #get jail position
 
    
     if observation is None:
         
-        self.beliefs = util.Counter({jail_pos: 1.0})
-    else:
+        self.beliefs = util.Counter({jail_pos: 1.0}) #If the ghost is not observed init beliefs
+    else: #Else iterate over all positible ghost positions and calculate the probability
         for ghost_pos in self.allPositions:
             observation_prob = self.getObservationProb(observation, pac_pos,
                                                       ghost_pos, jail_pos)
@@ -140,23 +139,22 @@ def elapseTime(self, gameState):
     Pacman's current position. However, this is not a problem, as Pacman's
     current position is known.
     """
-    "*** YOUR CODE HERE ***"
   
-    updated_beliefs = util.Counter() 
+    updated_beliefs = util.Counter() #Init beliefs array
 
    
-    for old_pos in self.allPositions:
+    for old_pos in self.allPositions: #Iterate over all positions
 
        
-        new_pos_distribution = self.getPositionDistribution(gameState, old_pos)
+        new_pos_distribution = self.getPositionDistribution(gameState, old_pos) #Get distribution of each position
 
        
         for new_pos, prob in new_pos_distribution.items():
-            updated_beliefs[new_pos] += self.beliefs[old_pos] * prob
+            updated_beliefs[new_pos] += self.beliefs[old_pos] * prob #Update beliefs array
 
    
-    updated_beliefs.normalize()
+    updated_beliefs.normalize() #Normalize if needed
 
    
-    self.beliefs = updated_beliefs
+    self.beliefs = updated_beliefs #Update class property
 
